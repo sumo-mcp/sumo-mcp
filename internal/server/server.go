@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	_ "embed"
+	"fmt"
 
 	"github.com/google/jsonschema-go/jsonschema"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
@@ -14,7 +15,7 @@ import (
 var instructions string
 
 func New(version string, client sumoapi.Client) *mcp.Server {
-	mcpServer := mcp.NewServer(&mcp.Implementation{
+	s := mcp.NewServer(&mcp.Implementation{
 		Name:    "sumo-mcp",
 		Title:   "Sumo MCP Server",
 		Version: version,
@@ -23,96 +24,118 @@ func New(version string, client sumoapi.Client) *mcp.Server {
 		HasTools:     true,
 	})
 
-	addOpts := []mcp.AddToolOption{
-		mcp.WithSchemaOptions(&jsonschema.ForOptions{
-			TypeSchemas: sumoapi.TypeSchemas(),
-		}),
-	}
+	addObjectTool(s, "search_rikishi",
+		"Search for rikishi (sumo wrestlers).",
+		client.SearchRikishi)
 
-	mcp.AddTool(mcpServer, &mcp.Tool{
-		Name:        "search_rikishi",
-		Description: "Search for rikishi (sumo wrestlers).",
-	}, wrap(client.SearchRikishi), addOpts...)
+	addObjectTool(s, "get_rikishi",
+		"Get detailed profile information about a specific rikishi (sumo wrestler).",
+		client.GetRikishi)
 
-	mcp.AddTool(mcpServer, &mcp.Tool{
-		Name:        "get_rikishi",
-		Description: "Get detailed profile information about a specific rikishi (sumo wrestler).",
-	}, wrap(client.GetRikishi), addOpts...)
+	addObjectTool(s, "get_rikishi_stats",
+		"Get overall performance stats about a specific rikishi (sumo wrestler).",
+		client.GetRikishiStats)
 
-	mcp.AddTool(mcpServer, &mcp.Tool{
-		Name:        "get_rikishi_stats",
-		Description: "Get overall performance stats about a specific rikishi (sumo wrestler).",
-	}, wrap(client.GetRikishiStats), addOpts...)
+	addObjectTool(s, "list_rikishi_matches",
+		"List matches for a specific rikishi (sumo wrestler).",
+		client.ListRikishiMatches)
 
-	mcp.AddTool(mcpServer, &mcp.Tool{
-		Name:        "list_rikishi_matches",
-		Description: "List matches for a specific rikishi (sumo wrestler).",
-	}, wrap(client.ListRikishiMatches), addOpts...)
+	addObjectTool(s, "list_rikishi_matches_against_opponent",
+		"List matches for a specific rikishi (sumo wrestler) against a specific opponent.",
+		client.ListRikishiMatchesAgainstOpponent)
 
-	mcp.AddTool(mcpServer, &mcp.Tool{
-		Name:        "list_rikishi_matches_against_opponent",
-		Description: "List matches for a specific rikishi (sumo wrestler) against a specific opponent.",
-	}, wrap(client.ListRikishiMatchesAgainstOpponent), addOpts...)
+	addObjectTool(s, "get_basho",
+		"Get detailed information about a specific basho (sumo tournament).",
+		client.GetBasho)
 
-	mcp.AddTool(mcpServer, &mcp.Tool{
-		Name:        "get_basho",
-		Description: "Get detailed information about a specific basho (sumo tournament).",
-	}, wrap(client.GetBasho), addOpts...)
+	addObjectTool(s, "get_banzuke",
+		"Get the banzuke (ranking list) for a specific basho (sumo tournament) division.",
+		client.GetBanzuke)
 
-	mcp.AddTool(mcpServer, &mcp.Tool{
-		Name:        "get_banzuke",
-		Description: "Get the banzuke (ranking list) for a specific basho (sumo tournament) division.",
-	}, wrap(client.GetBanzuke), addOpts...)
+	addObjectTool(s, "get_basho_with_torikumi",
+		"Get detailed information about a specific basho (sumo tournament) along with the torikumi (bout schedule) for a specific day and division.",
+		client.GetBashoWithTorikumi)
 
-	mcp.AddTool(mcpServer, &mcp.Tool{
-		Name:        "get_basho_with_torikumi",
-		Description: "Get detailed information about a specific basho (sumo tournament) along with the torikumi (bout schedule) for a specific day and division.",
-	}, wrap(client.GetBashoWithTorikumi), addOpts...)
+	addObjectTool(s, "list_kimarite",
+		"List kimarite (winning techniques) along with their statistics.",
+		client.ListKimarite)
 
-	mcp.AddTool(mcpServer, &mcp.Tool{
-		Name:        "list_kimarite",
-		Description: "List kimarite (winning techniques) along with their statistics.",
-	}, wrap(client.ListKimarite), addOpts...)
+	addObjectTool(s, "list_kimarite_matches",
+		"List matches won by a specific kimarite (winning technique).",
+		client.ListKimariteMatches)
 
-	mcp.AddTool(mcpServer, &mcp.Tool{
-		Name:        "list_kimarite_matches",
-		Description: "List matches won by a specific kimarite (winning technique).",
-	}, wrap(client.ListKimariteMatches), addOpts...)
+	addObjectListTool(s, "list_measurement_changes",
+		"List measurement changes for rikishi (sumo wrestlers).",
+		client.ListMeasurementChanges)
 
-	mcp.AddTool(mcpServer, &mcp.Tool{
-		Name:        "list_measurement_changes",
-		Description: "List measurement changes for rikishi (sumo wrestlers).",
-	}, wrapList(client.ListMeasurementChanges), addOpts...)
+	addObjectListTool(s, "list_rank_changes",
+		"List rank changes for rikishi (sumo wrestlers).",
+		client.ListRankChanges)
 
-	mcp.AddTool(mcpServer, &mcp.Tool{
-		Name:        "list_rank_changes",
-		Description: "List rank changes for rikishi (sumo wrestlers).",
-	}, wrapList(client.ListRankChanges), addOpts...)
+	addObjectListTool(s, "list_shikona_changes",
+		"List shikona (ring name) changes for rikishi (sumo wrestlers).",
+		client.ListShikonaChanges)
 
-	mcp.AddTool(mcpServer, &mcp.Tool{
-		Name:        "list_shikona_changes",
-		Description: "List shikona (ring name) changes for rikishi (sumo wrestlers).",
-	}, wrapList(client.ListShikonaChanges), addOpts...)
-
-	return mcpServer
+	return s
 }
 
-func wrap[In, Out any](fn func(context.Context, In) (Out, error)) func(context.Context, *mcp.CallToolRequest, In) (*mcp.CallToolResult, Out, error) {
-	return func(ctx context.Context, req *mcp.CallToolRequest, in In) (*mcp.CallToolResult, Out, error) {
+func addObjectTool[In, Out any](s *mcp.Server, name, desc string, fn func(context.Context, In) (*Out, error)) {
+	schemaOpts := &jsonschema.ForOptions{
+		TypeSchemas: sumoapi.TypeSchemas(),
+	}
+
+	inputSchema, err := jsonschema.For[In](schemaOpts)
+	if err != nil {
+		panic(fmt.Sprintf("error inferring input schema for %s: %v", name, err))
+	}
+
+	outputSchema, err := jsonschema.For[Out](schemaOpts)
+	if err != nil {
+		panic(fmt.Sprintf("error inferring output schema for %s: %v", name, err))
+	}
+
+	tool := &mcp.Tool{
+		Name:         name,
+		Description:  desc,
+		InputSchema:  inputSchema,
+		OutputSchema: outputSchema,
+	}
+
+	mcp.AddTool(s, tool, func(ctx context.Context, req *mcp.CallToolRequest, in In) (*mcp.CallToolResult, *Out, error) {
 		out, err := fn(ctx, in)
 		if err == nil {
 			return nil, out, nil
 		}
-		var zero Out
 		return &mcp.CallToolResult{
 			IsError: true,
 			Content: []mcp.Content{&mcp.TextContent{Text: err.Error()}},
-		}, zero, nil
-	}
+		}, nil, nil
+	})
 }
 
-func wrapList[In, Out any](fn func(context.Context, In) ([]Out, error)) func(context.Context, *mcp.CallToolRequest, In) (*mcp.CallToolResult, *listWrapper[Out], error) {
-	return func(ctx context.Context, req *mcp.CallToolRequest, in In) (*mcp.CallToolResult, *listWrapper[Out], error) {
+func addObjectListTool[In, Out any](s *mcp.Server, name, desc string, fn func(context.Context, In) ([]Out, error)) {
+	schemaOpts := &jsonschema.ForOptions{
+		TypeSchemas: sumoapi.TypeSchemas(),
+	}
+
+	inputSchema, err := jsonschema.For[In](schemaOpts)
+	if err != nil {
+		panic(fmt.Sprintf("error inferring input schema for %s: %v", name, err))
+	}
+
+	outputSchema, err := jsonschema.For[listWrapper[Out]](schemaOpts)
+	if err != nil {
+		panic(fmt.Sprintf("error inferring output schema for %s: %v", name, err))
+	}
+
+	tool := &mcp.Tool{
+		Name:         name,
+		Description:  desc,
+		InputSchema:  inputSchema,
+		OutputSchema: outputSchema,
+	}
+
+	mcp.AddTool(s, tool, func(ctx context.Context, req *mcp.CallToolRequest, in In) (*mcp.CallToolResult, *listWrapper[Out], error) {
 		outList, err := fn(ctx, in)
 		if err == nil {
 			return nil, &listWrapper[Out]{Items: outList}, nil
@@ -121,7 +144,7 @@ func wrapList[In, Out any](fn func(context.Context, In) ([]Out, error)) func(con
 			IsError: true,
 			Content: []mcp.Content{&mcp.TextContent{Text: err.Error()}},
 		}, nil, nil
-	}
+	})
 }
 
 type listWrapper[Out any] struct {
