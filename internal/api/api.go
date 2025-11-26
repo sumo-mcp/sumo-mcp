@@ -2,15 +2,26 @@ package api
 
 import (
 	"net/http"
+	"reflect"
+
+	"github.com/google/jsonschema-go/jsonschema"
 
 	"github.com/sumo-mcp/sumoapi-go"
 )
 
-// client is a wrapper around sumoapi.Client to allow
-// for custom behavior, e.g. there are bugs that can
-// be fixed on the client side.
-type client struct{ sumoapi.Client }
+// API defines the operations available in the Sumo API.
+type API = sumoapi.Client
 
-func New(httpClient *http.Client) sumoapi.Client {
-	return client{sumoapi.New(sumoapi.WithHTTPClient(httpClient))}
+// wrapper is a wrapper around API to allow for custom
+// custom behavior, e.g. there are bugs that can be
+// fixed on the wrapper side.
+type wrapper struct{ API }
+
+func New(httpClient *http.Client) API {
+	return wrapper{sumoapi.New(sumoapi.WithHTTPClient(httpClient))}
+}
+
+// TypeSchemas returns the registered type schemas.
+func TypeSchemas() map[reflect.Type]*jsonschema.Schema {
+	return sumoapi.TypeSchemas()
 }

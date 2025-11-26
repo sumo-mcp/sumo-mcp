@@ -8,13 +8,13 @@ import (
 	"github.com/google/jsonschema-go/jsonschema"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
-	"github.com/sumo-mcp/sumoapi-go"
+	"github.com/sumo-mcp/sumo-mcp/internal/api"
 )
 
 //go:embed instructions.md
 var instructions string
 
-func New(version string, client sumoapi.Client) *mcp.Server {
+func New(version string, a api.API) *mcp.Server {
 	s := mcp.NewServer(&mcp.Implementation{
 		Name:    "sumo-mcp",
 		Title:   "Sumo MCP Server",
@@ -26,62 +26,62 @@ func New(version string, client sumoapi.Client) *mcp.Server {
 
 	addObjectTool(s, "search_rikishi",
 		"Search for rikishi (sumo wrestlers).",
-		client.SearchRikishi)
+		a.SearchRikishi)
 
 	addObjectTool(s, "get_rikishi",
 		"Get detailed profile information about a specific rikishi (sumo wrestler).",
-		client.GetRikishi)
+		a.GetRikishi)
 
 	addObjectTool(s, "get_rikishi_stats",
 		"Get overall performance stats about a specific rikishi (sumo wrestler).",
-		client.GetRikishiStats)
+		a.GetRikishiStats)
 
 	addObjectTool(s, "list_rikishi_matches",
 		"List matches for a specific rikishi (sumo wrestler).",
-		client.ListRikishiMatches)
+		a.ListRikishiMatches)
 
 	addObjectTool(s, "list_rikishi_matches_against_opponent",
 		"List matches for a specific rikishi (sumo wrestler) against a specific opponent.",
-		client.ListRikishiMatchesAgainstOpponent)
+		a.ListRikishiMatchesAgainstOpponent)
 
 	addObjectTool(s, "get_basho",
 		"Get detailed information about a specific basho (sumo tournament).",
-		client.GetBasho)
+		a.GetBasho)
 
 	addObjectTool(s, "get_banzuke",
 		"Get the banzuke (ranking list) for a specific basho (sumo tournament) division.",
-		client.GetBanzuke)
+		a.GetBanzuke)
 
 	addObjectTool(s, "get_basho_with_torikumi",
 		"Get detailed information about a specific basho (sumo tournament) along with the torikumi (bout schedule) for a specific day and division.",
-		client.GetBashoWithTorikumi)
+		a.GetBashoWithTorikumi)
 
 	addObjectTool(s, "list_kimarite",
 		"List kimarite (winning techniques) along with their statistics.",
-		client.ListKimarite)
+		a.ListKimarite)
 
 	addObjectTool(s, "list_kimarite_matches",
 		"List matches won by a specific kimarite (winning technique).",
-		client.ListKimariteMatches)
+		a.ListKimariteMatches)
 
 	addObjectListTool(s, "list_measurement_changes",
 		"List measurement changes for rikishi (sumo wrestlers).",
-		client.ListMeasurementChanges)
+		a.ListMeasurementChanges)
 
 	addObjectListTool(s, "list_rank_changes",
 		"List rank changes for rikishi (sumo wrestlers).",
-		client.ListRankChanges)
+		a.ListRankChanges)
 
 	addObjectListTool(s, "list_shikona_changes",
 		"List shikona (ring name) changes for rikishi (sumo wrestlers).",
-		client.ListShikonaChanges)
+		a.ListShikonaChanges)
 
 	return s
 }
 
 func addObjectTool[In, Out any](s *mcp.Server, name, desc string, fn func(context.Context, In) (*Out, error)) {
 	schemaOpts := &jsonschema.ForOptions{
-		TypeSchemas: sumoapi.TypeSchemas(),
+		TypeSchemas: api.TypeSchemas(),
 	}
 
 	inputSchema, err := jsonschema.For[In](schemaOpts)
@@ -99,6 +99,9 @@ func addObjectTool[In, Out any](s *mcp.Server, name, desc string, fn func(contex
 		Description:  desc,
 		InputSchema:  inputSchema,
 		OutputSchema: outputSchema,
+		Annotations: &mcp.ToolAnnotations{
+			ReadOnlyHint: true,
+		},
 	}
 
 	mcp.AddTool(s, tool, func(ctx context.Context, req *mcp.CallToolRequest, in In) (*mcp.CallToolResult, *Out, error) {
@@ -115,7 +118,7 @@ func addObjectTool[In, Out any](s *mcp.Server, name, desc string, fn func(contex
 
 func addObjectListTool[In, Out any](s *mcp.Server, name, desc string, fn func(context.Context, In) ([]Out, error)) {
 	schemaOpts := &jsonschema.ForOptions{
-		TypeSchemas: sumoapi.TypeSchemas(),
+		TypeSchemas: api.TypeSchemas(),
 	}
 
 	inputSchema, err := jsonschema.For[In](schemaOpts)
@@ -133,6 +136,9 @@ func addObjectListTool[In, Out any](s *mcp.Server, name, desc string, fn func(co
 		Description:  desc,
 		InputSchema:  inputSchema,
 		OutputSchema: outputSchema,
+		Annotations: &mcp.ToolAnnotations{
+			ReadOnlyHint: true,
+		},
 	}
 
 	mcp.AddTool(s, tool, func(ctx context.Context, req *mcp.CallToolRequest, in In) (*mcp.CallToolResult, *listWrapper[Out], error) {
