@@ -1,7 +1,5 @@
 ## Welcome to Sumo MCP Server 🇯🇵 🤼‍♂️
 
-⚠️ Not live yet! Coming soon... ⚠️
-
 A free MCP server to power AI chatbots with historical and live data for
 answering your tough questions as a fanatic sumo fan!
 
