@@ -13,8 +13,8 @@ import (
 type API = sumoapi.Client
 
 // wrapper is a wrapper around API to allow for custom
-// custom behavior, e.g. there are bugs that can be
-// fixed on the wrapper side.
+// behavior, e.g. there are bugs that can be fixed
+// on the wrapper side.
 type wrapper struct{ API }
 
 func New(httpClient *http.Client) API {
