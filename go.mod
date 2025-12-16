@@ -6,7 +6,7 @@ require (
 	github.com/GoogleCloudPlatform/functions-framework-go v1.9.2
 	github.com/google/jsonschema-go v0.3.0
 	github.com/modelcontextprotocol/go-sdk v1.1.0
-	github.com/sumo-mcp/sumoapi-go v0.5.0
+	github.com/sumo-mcp/sumoapi-go v0.6.0
 )
 
 require (
