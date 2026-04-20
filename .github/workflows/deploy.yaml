@@ -21,7 +21,7 @@ jobs:
         run: |
           gcloud functions deploy sumo-mcp \
             --gen2 \
-            --runtime=go125 \
+            --runtime=go126 \
             --region=europe-west2 \
             --source=. \
             --entry-point=sumo-mcp \
