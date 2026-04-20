@@ -20,7 +20,7 @@ who might feel that I am engaging in cultural appropriation. I am truly sorry.
 
 ### Acknowledgements
 
-Thank you very much to the anonymous creator of https://sumo-api.com!
+Thank you very much to [@jamesbalcombe83](https://github.com/jamesbalcombe83), the creator of https://sumo-api.com!
 The https://sumo-mcp.com project is only possible because of your hard work.
 
 Just like https://sumo-api.com, https://sumo-mcp.com is also free to use
