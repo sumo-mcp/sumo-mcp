@@ -5,8 +5,8 @@ go 1.25.0
 require (
 	github.com/GoogleCloudPlatform/functions-framework-go v1.9.2
 	github.com/google/jsonschema-go v0.4.2
-	github.com/modelcontextprotocol/go-sdk v1.4.1
-	github.com/sumo-mcp/sumoapi-go v0.6.0
+	github.com/modelcontextprotocol/go-sdk v1.5.0
+	github.com/sumo-mcp/sumoapi-go v0.7.0
 )
 
 require (
@@ -21,6 +21,6 @@ require (
 	go.uber.org/atomic v1.4.0 // indirect
 	go.uber.org/multierr v1.1.0 // indirect
 	go.uber.org/zap v1.10.0 // indirect
-	golang.org/x/oauth2 v0.34.0 // indirect
-	golang.org/x/sys v0.40.0 // indirect
+	golang.org/x/oauth2 v0.35.0 // indirect
+	golang.org/x/sys v0.41.0 // indirect
 )
