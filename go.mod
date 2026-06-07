@@ -4,8 +4,8 @@ go 1.26.0
 
 require (
 	github.com/GoogleCloudPlatform/functions-framework-go v1.9.2
-	github.com/google/jsonschema-go v0.4.2
-	github.com/modelcontextprotocol/go-sdk v1.5.0
+	github.com/google/jsonschema-go v0.4.3
+	github.com/modelcontextprotocol/go-sdk v1.6.1
 	github.com/sumo-mcp/sumoapi-go v0.7.0
 )
 
